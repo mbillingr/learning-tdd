@@ -1,1 +1,4 @@
-pub mod money_test;
+pub mod stocks;
+
+#[cfg(test)]
+mod money_test;
