@@ -20,8 +20,11 @@ class Portfolio {
         if (money.currency === currency) {
             return money.amount;
         }
-        let eurToUsd = 1.2;
-        return money.amount * eurToUsd;
+        let exchangeRates = new Map();
+        exchangeRates.set("EUR->USD", 1.2);
+        exchangeRates.set("USD->KRW", 1100);
+        let key = money.currency + "->" + currency;
+        return money.amount * exchangeRates.get(key);
     }
 }
 

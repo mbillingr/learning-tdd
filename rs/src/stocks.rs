@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub struct Portfolio {
     holdings: Vec<Money>,
 }
@@ -46,7 +48,9 @@ fn convert(money: &Money, currency: &'static str) -> f64 {
     if money.currency == currency {
         money.amount
     } else {
-        let eur_to_usd = 1.2;
-        money.amount * eur_to_usd
+        let mut exchange_rates = HashMap::new();
+        exchange_rates.insert(("EUR", "USD"), 1.2);
+        exchange_rates.insert(("USD", "KRW"), 1100.0);
+        money.amount * exchange_rates[&(money.currency, currency)]
     }
 }

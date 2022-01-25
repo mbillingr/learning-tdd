@@ -43,3 +43,17 @@ fn test_addition_of_dollars_and_euros() {
     let actual_value = portfolio.evaluate("USD");
     assert_eq!(actual_value, expected_value);
 }
+
+#[test]
+fn test_addition_of_dollars_and_wons() {
+    let one_dollar = Money::new(1, "USD");
+    let eleven_hundred_won = Money::new(1100, "KRW");
+
+    let mut portfolio = Portfolio::new();
+    portfolio = portfolio.add(one_dollar);
+    portfolio = portfolio.add(eleven_hundred_won);
+
+    let expected_value = Money::new(2200, "KRW");
+    let actual_value = portfolio.evaluate("KRW");
+    assert_eq!(actual_value, expected_value);
+}

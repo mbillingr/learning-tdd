@@ -13,10 +13,14 @@ class Portfolio:
         self.moneys.extend(moneys)
 
     def evaluate(self, currency):
-        total = functools.reduce(operator.add, map(lambda m: self.__convert(m, currency), self.moneys), 0)
+        total = functools.reduce(
+            operator.add, map(lambda m: self.__convert(m, currency), self.moneys), 0
+        )
         return Money(total, currency)
 
     def __convert(self, money, currency):
         if money.currency == currency:
             return money.amount
-        return money.amount * self._eur_to_usd
+        exchange_rates = {"EUR->USD": 1.2, "USD->KRW": 1100}
+        key = money.currency + "->" + currency
+        return money.amount * exchange_rates[key]
