@@ -14,7 +14,7 @@ impl Portfolio {
     }
 
     pub fn evaluate(&self, currency: &'static str) -> Money {
-        let total: f64 = self.holdings.iter().map(|m| m.amount).sum();
+        let total: f64 = self.holdings.iter().map(|m| convert(m, currency)).sum();
         Money::new(total, currency)
     }
 }
@@ -39,5 +39,14 @@ impl Money {
 
     pub fn divide(&self, divisor: u64) -> Self {
         Money::new(self.amount / divisor as f64, self.currency)
+    }
+}
+
+fn convert(money: &Money, currency: &'static str) -> f64 {
+    if money.currency == currency {
+        money.amount
+    } else {
+        let eur_to_usd = 1.2;
+        money.amount * eur_to_usd
     }
 }

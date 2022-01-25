@@ -18,15 +18,28 @@ fn test_devision() {
 
 #[test]
 fn test_addition() {
-    let mut portfolio = Portfolio::new();
-
     let five_dollars = Money::new(5, "USD");
     let ten_dollars = Money::new(10, "USD");
     let fifteen_dollars = Money::new(15, "USD");
 
+    let mut portfolio = Portfolio::new();
     portfolio = portfolio.add(five_dollars);
     portfolio = portfolio.add(ten_dollars);
     let portfolio_in_dollars = portfolio.evaluate("USD");
 
     assert_eq!(portfolio_in_dollars, fifteen_dollars);
+}
+
+#[test]
+fn test_addition_of_dollars_and_euros() {
+    let five_dollars = Money::new(5, "USD");
+    let ten_euros = Money::new(10, "EUR");
+
+    let mut portfolio = Portfolio::new();
+    portfolio = portfolio.add(five_dollars);
+    portfolio = portfolio.add(ten_euros);
+
+    let expected_value = Money::new(17, "USD");
+    let actual_value = portfolio.evaluate("USD");
+    assert_eq!(actual_value, expected_value);
 }
