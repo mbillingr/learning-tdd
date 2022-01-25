@@ -1,4 +1,25 @@
-#[derive(Debug, PartialEq)]
+pub struct Portfolio {
+    holdings: Vec<Money>,
+}
+
+impl Portfolio {
+    pub fn new() -> Self {
+        Portfolio { holdings: vec![] }
+    }
+
+    pub fn add(&self, money: Money) -> Self {
+        let mut holdings = self.holdings.clone();
+        holdings.push(money);
+        Portfolio { holdings }
+    }
+
+    pub fn evaluate(&self, currency: &'static str) -> Money {
+        let total: f64 = self.holdings.iter().map(|m| m.amount).sum();
+        Money::new(total, currency)
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Money {
     amount: f64,
     currency: &'static str,
@@ -45,5 +66,20 @@ mod tests {
         let expected_result = Money::new(1000.5, "KRW");
         let actual_result = original_money.divide(4);
         assert_eq!(actual_result, expected_result);
+    }
+
+    #[test]
+    fn test_addition() {
+        let mut portfolio = Portfolio::new();
+
+        let five_dollars = Money::new(5, "USD");
+        let ten_dollars = Money::new(10, "USD");
+        let fifteen_dollars = Money::new(15, "USD");
+
+        portfolio = portfolio.add(five_dollars);
+        portfolio = portfolio.add(ten_dollars);
+        let portfolio_in_dollars = portfolio.evaluate("USD");
+
+        assert_eq!(portfolio_in_dollars, fifteen_dollars);
     }
 }

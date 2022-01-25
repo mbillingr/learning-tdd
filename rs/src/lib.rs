@@ -1,1 +1,1 @@
-mod money_test;
+pub mod money_test;
