@@ -10,10 +10,21 @@ class Portfolio {
     }
 
     evaluate(currency) {
+        let failures = [];
         let total = this.moneys.reduce((sum, money) => {
-            return sum + this.convert(money, currency);
+            let convertedAmount = this.convert(money, currency);
+            if (convertedAmount === undefined) {
+                failures.push(money.currency + "->" + currency)
+                return sum;
+            }
+            return sum + convertedAmount;
         }, 0);
-        return new Money(total, currency);
+
+        if (!failures.length) {
+            return new Money(total, currency);
+        }
+
+        throw new Error("Missing exchange rate(s): [" + failures.join() + "]")
     }
 
     convert(money, currency) {
@@ -24,7 +35,11 @@ class Portfolio {
         exchangeRates.set("EUR->USD", 1.2);
         exchangeRates.set("USD->KRW", 1100);
         let key = money.currency + "->" + currency;
-        return money.amount * exchangeRates.get(key);
+        let rate = exchangeRates.get(key);
+        if (rate === undefined) {
+            return undefined;
+        }
+        return money.amount * rate;
     }
 }
 

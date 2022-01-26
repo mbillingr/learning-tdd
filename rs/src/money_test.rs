@@ -27,7 +27,7 @@ fn test_addition() {
     portfolio = portfolio.add(ten_dollars);
     let portfolio_in_dollars = portfolio.evaluate("USD");
 
-    assert_eq!(portfolio_in_dollars, fifteen_dollars);
+    assert_eq!(portfolio_in_dollars, Ok(fifteen_dollars));
 }
 
 #[test]
@@ -41,7 +41,7 @@ fn test_addition_of_dollars_and_euros() {
 
     let expected_value = Money::new(17, "USD");
     let actual_value = portfolio.evaluate("USD");
-    assert_eq!(actual_value, expected_value);
+    assert_eq!(actual_value, Ok(expected_value));
 }
 
 #[test]
@@ -55,5 +55,23 @@ fn test_addition_of_dollars_and_wons() {
 
     let expected_value = Money::new(2200, "KRW");
     let actual_value = portfolio.evaluate("KRW");
-    assert_eq!(actual_value, expected_value);
+    assert_eq!(actual_value, Ok(expected_value));
+}
+
+#[test]
+fn test_addition_with_missing_exchange_rates() {
+    let one_dollar = Money::new(1, "USD");
+    let one_euro = Money::new(1, "EUR");
+    let one_won = Money::new(1, "KRW");
+
+    let mut portfolio = Portfolio::new();
+    portfolio = portfolio.add(one_dollar);
+    portfolio = portfolio.add(one_euro);
+    portfolio = portfolio.add(one_won);
+
+    let expected_error = Err(String::from(
+        "Missing exchange rate(s): [\"USD->Kalganid\", \"EUR->Kalganid\", \"KRW->Kalganid\"]",
+    ));
+    let actual_value = portfolio.evaluate("Kalganid");
+    assert_eq!(actual_value, expected_error);
 }

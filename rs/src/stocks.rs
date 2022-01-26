@@ -15,9 +15,24 @@ impl Portfolio {
         Portfolio { holdings }
     }
 
-    pub fn evaluate(&self, currency: &'static str) -> Money {
-        let total: f64 = self.holdings.iter().map(|m| convert(m, currency)).sum();
-        Money::new(total, currency)
+    pub fn evaluate(&self, currency: &'static str) -> Result<Money, String> {
+        let (total, err) = self
+            .holdings
+            .iter()
+            .fold((0.0, vec![]), |(total, mut err), m| {
+                if let Some(amount) = convert(m, currency) {
+                    (total + amount, err)
+                } else {
+                    err.push(format!("{}->{}", m.currency, currency));
+                    (total, err)
+                }
+            });
+
+        if err.is_empty() {
+            Ok(Money::new(total, currency))
+        } else {
+            Err(format!("Missing exchange rate(s): {:?}", err))
+        }
     }
 }
 
@@ -44,13 +59,15 @@ impl Money {
     }
 }
 
-fn convert(money: &Money, currency: &'static str) -> f64 {
+fn convert(money: &Money, currency: &'static str) -> Option<f64> {
     if money.currency == currency {
-        money.amount
+        Some(money.amount)
     } else {
         let mut exchange_rates = HashMap::new();
         exchange_rates.insert(("EUR", "USD"), 1.2);
         exchange_rates.insert(("USD", "KRW"), 1100.0);
-        money.amount * exchange_rates[&(money.currency, currency)]
+        exchange_rates
+            .get(&(money.currency, currency))
+            .map(|rate| money.amount * rate)
     }
 }
