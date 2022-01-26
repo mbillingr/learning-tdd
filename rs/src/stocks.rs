@@ -15,18 +15,19 @@ impl Portfolio {
         Portfolio { holdings }
     }
 
-    pub fn evaluate(&self, currency: &'static str) -> Result<Money, String> {
-        let (total, err) = self
-            .holdings
-            .iter()
-            .fold((0.0, vec![]), |(total, mut err), m| {
-                if let Some(amount) = convert(m, currency) {
-                    (total + amount, err)
-                } else {
-                    err.push(format!("{}->{}", m.currency, currency));
-                    (total, err)
-                }
-            });
+    pub fn evaluate(&self, bank: &Bank, currency: &'static str) -> Result<Money, String> {
+        let (total, err) =
+            self.holdings
+                .iter()
+                .fold((0.0, vec![]), |(total, mut err), m| {
+                    match bank.convert(*m, currency) {
+                        Ok(Money { amount, .. }) => (total + amount, err),
+                        Err(conversion) => {
+                            err.push(conversion);
+                            (total, err)
+                        }
+                    }
+                });
 
         if err.is_empty() {
             Ok(Money::new(total, currency))
@@ -59,15 +60,29 @@ impl Money {
     }
 }
 
-fn convert(money: &Money, currency: &'static str) -> Option<f64> {
-    if money.currency == currency {
-        Some(money.amount)
-    } else {
-        let mut exchange_rates = HashMap::new();
-        exchange_rates.insert(("EUR", "USD"), 1.2);
-        exchange_rates.insert(("USD", "KRW"), 1100.0);
-        exchange_rates
-            .get(&(money.currency, currency))
-            .map(|rate| money.amount * rate)
+pub struct Bank {
+    exchange_rates: HashMap<(&'static str, &'static str), f64>,
+}
+
+impl Bank {
+    pub fn new() -> Self {
+        Bank {
+            exchange_rates: HashMap::new(),
+        }
+    }
+
+    pub fn add_exchange_rate(&mut self, from: &'static str, to: &'static str, rate: f64) {
+        self.exchange_rates.insert((from, to), rate);
+    }
+
+    pub fn convert(&self, money: Money, currency: &'static str) -> Result<Money, String> {
+        if money.currency == currency {
+            return Ok(money);
+        }
+
+        match self.exchange_rates.get(&(money.currency, currency)) {
+            Some(rate) => Ok(Money::new(money.amount * rate, currency)),
+            None => Err(format!("{}->{}", money.currency, currency)),
+        }
     }
 }
