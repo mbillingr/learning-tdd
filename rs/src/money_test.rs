@@ -87,12 +87,17 @@ fn test_addition_with_missing_exchange_rates() {
 }
 
 #[test]
-fn test_conversion() {
+fn test_conversion_with_different_rates() {
     let mut bank = Bank::new();
-    bank.add_exchange_rate("EUR", "USD", 1.2);
     let ten_euros = Money::new(10, "EUR");
+
+    bank.add_exchange_rate("EUR", "USD", 1.2);
     let actual_converted_money = bank.convert(ten_euros, "USD");
-    assert_eq!(actual_converted_money, Ok(Money::new(12, "USD")))
+    assert_eq!(actual_converted_money, Ok(Money::new(12, "USD")));
+
+    bank.add_exchange_rate("EUR", "USD", 1.3);
+    let actual_converted_money = bank.convert(ten_euros, "USD");
+    assert_eq!(actual_converted_money, Ok(Money::new(13, "USD")));
 }
 
 #[test]
